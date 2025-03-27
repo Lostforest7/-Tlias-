@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.ClazzMapper">
+    <insert id="insert">
+        INSERT INTO clazz
+            (name,room,begin_date,end_date,master_id,subject,create_time,update_time)
+            VALUES (#{param.name},#{param.room},#{param.beginDate},#{param.endDate},
+                    #{param.masterId},#{param.subject},#{param.createTime},#{param.updateTime})
+    </insert>
+    <update id="update">
+        UPDATE clazz SET
+            name=#{name},room=#{room},begin_date=#{beginDate},end_date=#{endDate},
+            master_id=#{masterId},subject=#{subject},update_time=#{updateTime}
+            WHERE id=#{id}
+    </update>
+    <delete id="delete">
+        DELETE FROM clazz WHERE id=#{id}
+    </delete>
+
+    <select id="selectAll" resultType="org.example.pojo.Clazz">
+        SELECT
+        c.*,
+        e.name AS masterName,
+        CASE
+        WHEN c.begin_date &gt; #{currentDate} THEN '未开班'
+        WHEN c.end_date &lt; #{currentDate} THEN '已结束'
+        ELSE '在读中'
+        END status
+        FROM clazz c
+        JOIN emp e ON c.master_id = e.id
+        <where>
+            <if test="param.name != null and param.name != ''">
+                AND e.name = #{param.name}
+            </if>
+            <if test="param.begin != null and param.end != null">
+                AND c.end_date BETWEEN #{param.begin} AND #{param.end}
+            </if>
+        </where>
+        LIMIT #{param.page}, #{param.pageSize}
+    </select>
+    <select id="getById" resultType="org.example.pojo.Clazz">
+        SELECT name,room,begin_date,end_date,master_id,subject FROM clazz WHERE id=#{id}
+    </select>
+
+    <!--<select id="selectEmp" resultType="org.example.pojo.Emp">
+        SELECT name FROM emp
+    </select>-->
+
+</mapper>
